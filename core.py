@@ -66,6 +66,9 @@ class Rock(object):
     def poro(self, pres):
         return 1
     
+    def perm(self):
+        return 1
+    
     def compress(self, pres):
         return 1
 
@@ -78,7 +81,7 @@ class Fluid(object):
         return 1
     
     def mu(self, pres):
-        pass
+        return 1
     
     def compress(self, pres):
         return 1
