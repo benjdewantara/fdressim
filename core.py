@@ -4,9 +4,11 @@ import differentiator
 
 class Node(object):
     def __init__(self, nodeIndx, dims):
+        '''
+        '''
         self.nodeIndx = int(nodeIndx)
         self.coordIndx = np.unravel_index(self.nodeIndx, dims)
-        self.src = None
+        self.qsrc = 0
         self.initBoundaryNode(dims)
         
     def initBoundaryNode(self, dims):
@@ -17,29 +19,35 @@ class Node(object):
         if(self.coordIndx[2] == 0):
             self.boundaryWRTx[0] = True
             self.boundaryWRTx[1]['before'] = BoundaryCondition()
-        elif(self.coordIndx[1] == 0):
+        if(self.coordIndx[1] == 0):
             self.boundaryWRTy[0] = True
             self.boundaryWRTy[1]['before'] = BoundaryCondition()
-        elif(self.coordIndx[0] == 0):
+        if(self.coordIndx[0] == 0):
             self.boundaryWRTz[0] = True
             self.boundaryWRTz[1]['before'] = BoundaryCondition()
         
         if(self.coordIndx[2] == dims[2]-1):
             self.boundaryWRTx[0] = True
             self.boundaryWRTx[1]['after'] = BoundaryCondition()
-        elif(self.coordIndx[1] == dims[1]-1):
+        if(self.coordIndx[1] == dims[1]-1):
             self.boundaryWRTy[0] = True
             self.boundaryWRTy[1]['after'] = BoundaryCondition()
-        elif(self.coordIndx[0] == dims[0]-1):
+        if(self.coordIndx[0] == dims[0]-1):
             self.boundaryWRTz[0] = True
             self.boundaryWRTz[1]['after'] = BoundaryCondition()
     
-    def setSrc(self):
+    def setSrc(self, flowrate):
+        #flowrate in bbl/day, it needs to be converted to ft^3/s
+        #multiply with 6.498360546816345e-05
+        self.qsrc = 6.498360546816345e-05 * flowrate
         pass
 
 
 class Grid(object):
     def __init__(self, dims):
+        '''
+        self.deltaX, self.deltaY, self.deltaZ are all in ft^3
+        '''
         nz, ny, nx = dims
         self.dims = dims
         self.numOfNodes = nz*ny*nx
@@ -59,35 +67,52 @@ class Grid(object):
         
 
 class Rock(object):
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, refPoro, refPres, compress, perm):
+        '''
+        A Rock object will represent the reservoir's rock.
+        The properties of a rock we are interested in are:
+        porosity (self.poro), and
+        absolute permeability (self.perm, in mD).
+        Furthermore, the behavior of porosity with respect to pressure is
+        explained using getPoro() function on the basis of
+        its compressibility (self.compress, in psi^-1)
+        
+        
+        '''
+        #self.name = name
+        self.refPoro = refPoro
+        self.refPres = refPres
+        self.compress = compress
+        self.perm = perm
         pass
     
-    def poro(self, pres):
-        return 1
-    
-    def perm(self):
-        return 1
-    
-    def compress(self, pres):
-        return 1
+    def getPoro(self, pres):
+        return self.refPoro*np.exp(self.compress*(pres - self.refPres))
 
 class Fluid(object):
-    def __init__(self, name):
-        self.name = name
-        pass
+    def __init__(self, refRho, refPres, compress, mu):
+        '''
+        A Fluid object will represent a fluid residing in a reservoir.
+        The properties of a fluid we are interested in are:
+        density (self.rho, in lbm/ft^3), and
+        viscosity (self.mu, in cP).
+        The behavior of density with respect to pressure is explained using
+        compressibility (compressibility() function, in psi^-1)
+        
+        '''
+        #self.name = name
+        self.refRho = refRho
+        self.refPres = refPres
+        self.compress = compress
+        self.mu = mu
     
-    def rho(self, pres):
-        return 1
-    
-    def mu(self, pres):
-        return 1
-    
-    def compress(self, pres):
-        return 1
+    def getRho(self, pres):
+        return self.refRho*np.exp(self.compress*(pres - self.refPres))
 
 class Reservoir(object):
     def __init__(self, grid, fluid, rock, resDim):
+        '''
+        '''
         self.grid = grid
         self.fluid = fluid
         self.rock = rock
@@ -138,6 +163,8 @@ class Reservoir(object):
 
 class BoundaryCondition(object):
     def __init__(self, bcType="n", value=0):
+        '''
+        '''
         if(bcType not in ['n', 'd']):
             raise ValueError("Wrong boundary condition specification!")
         self.bcType = bcType

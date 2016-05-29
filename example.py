@@ -3,9 +3,10 @@
 # and simply build a model then run a simulation
 
 from core import *
+from differentiator import runSimulation
 
 # Firstly, we can specify the dimension of the cartesian grid
-nz, ny, nx = 1, 5, 5
+nz, ny, nx = 1, 1, 5
 dims = (nz, ny, nx)
 g = Grid(dims)
 
@@ -14,9 +15,9 @@ Lz, Ly, Lx = nz*75, ny*1000, nx*1000
 resDimension = (Lz, Ly, Lx)
 
 # Build the fluid and rock model
-# Implement this soon!
-f = Fluid("Some fluid")
-r = Rock("Some rock")
+# See to this later!
+f = Fluid(refRho=62.428, refPres=14.7, compress=3.5*1e-6, mu=10)
+r = Rock(refPoro=0.18, refPres=14.7, compress=0, perm=0.015)
 
 # We contain all these informations in a Reservoir object
 res = Reservoir(grid=g, fluid=f, rock=r, resDim=resDimension)
@@ -25,10 +26,17 @@ res = Reservoir(grid=g, fluid=f, rock=r, resDim=resDimension)
 # condition has already been imposed if the Node is a boundary Node.
 # But we can specify another condition with another value as follows
 bc = BoundaryCondition()
-res.addBoundaryCondition(bc, x='before')
+#res.addBoundaryCondition(bc, x='before')
 
 # Set the initial pressure array
-res.setInitPressure(1000)
+res.setInitPressure(6000)
 
+
+# Set a source/sink in coordinate (0, 0, 3)
+res.grid.nodes[np.ravel_multi_index((0, 0, 3), res.grid.dims)].setSrc(-150)
+
+
+# Finally, run the simulation!
+runSimulation(res, dt=15, nTime=2)
 
 
