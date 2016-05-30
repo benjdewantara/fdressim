@@ -16,7 +16,7 @@ def runSimulation(res, dt, nTime):
         print("      Evaluating t=%i" %(i))
         print('presBefore = %s' %(presBefore))
         if(i == 0):
-#            print("   presBefore is None. Assigning res.initPressure")
+            print("   presBefore is None. Assigning res.initPressure")
 #            print("res.initPressure = %s" %(res.initPressure))
             presBefore = res.initPressure
             print("t=%i" %(i), file=resultsFile)
@@ -70,6 +70,10 @@ def oneStepDifferentiator(res, presBefore, dt):
         linEqWRTx, knownWRTx = differentialInX(indx, res, presBefore)
         linEqWRTy, knownWRTy = differentialInY(indx, res, presBefore)
         linEqWRTz, knownWRTz = differentialInZ(indx, res, presBefore)
+        
+        print('linEqWRTx\n%s' %(linEqWRTx))
+        print('linEqWRTy\n%s' %(linEqWRTy))
+        print('linEqWRTz\n%s' %(linEqWRTz))
         
         known[indx] += knownWRTx + knownWRTy + knownWRTz
         sle[indx] += linEqWRTt - linEqWRTx - linEqWRTy - linEqWRTz
@@ -186,8 +190,8 @@ def differentialInX(nodeIndx, res, presBefore):
     # finally, with confidence, we perform calculation for nodeIndx (aka coordIndx)
     linEq[nodeIndx] += -1*(transmissibility(coordIndx, coordIndxBefore, res, presBefore) + transmissibility(coordIndx, coordIndxAfter, res, presBefore))
     
-    print('Returning linEq=%s' %(linEq))
-    print('and known=%s' %(known))
+#    print('Returning linEq=%s' %(linEq))
+#    print('and known=%s' %(known))
     
     return linEq, known
 
@@ -288,12 +292,14 @@ def differentialInZ(nodeIndx, res, presBefore):
     coordIndxAfter = coordIndx[0]+1, coordIndx[1], coordIndx[2]
     coordIndxBefore = coordIndx[0]-1, coordIndx[1], coordIndx[2]
     
+    print('coordIndx=', coordIndx, ' coordIndxBefore=', coordIndxBefore, 'coordIndxAfter=', coordIndxAfter)
+    
     linEq = np.zeros(res.grid.numOfNodes, dtype='float64')
     known = 0.0
     
     deltaLen = res.grid.deltaZ
     
-    boundaryPresCri = res.grid.nodes[nodeIndx].boundaryWRTy[1]
+    boundaryPresCri = res.grid.nodes[nodeIndx].boundaryWRTz[1]
     
     # check if there's a 'before' boundary condition w.r.t. coordIndx
     bc = boundaryPresCri['before']

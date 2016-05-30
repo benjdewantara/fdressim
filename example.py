@@ -6,7 +6,7 @@ from core import *
 from differentiator import runSimulation
 
 # Firstly, we can specify the dimension of the cartesian grid
-nz, ny, nx = 1, 1, 5
+nz, ny, nx = 1, 2, 5
 dims = (nz, ny, nx)
 g = Grid(dims)
 
@@ -37,6 +37,6 @@ res.grid.nodes[np.ravel_multi_index((0, 0, 3), res.grid.dims)].setSrc(-150)
 
 
 # Finally, run the simulation!
-runSimulation(res, dt=15, nTime=2)
+runSimulation(res, dt=15, nTime=24)
 
 
