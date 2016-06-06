@@ -2,31 +2,37 @@ import numpy as np
 from scipy import linalg
 #import example
 
-TABchar = "   "
 
-def runSimulation(res, dt, nTime):
+# the difference in this differentiator2.py is that variable Vb
+# is put on the left hand side of the diffusivity equation (differential in time)
+# as opposed to differentiator.py who divides the entire equation by Vb
+
+
+
+
+def runSimulation2(res, dt, nTime):
     '''
     '''
     
-    resultsFile = open('results3.txt', 'w')
+    resultsFile = open('results2.txt', 'w')
     
     presBefore = None
     
     for i in range(nTime):
-        print(TABchar*0 + "Evaluating t=%i" %(i))
+        print("      Evaluating t=%i" %(i))
+        print('presBefore = %s' %(presBefore))
         if(i == 0):
-            print(TABchar*1 + "presBefore is None. Assigning res.initPressure")
+            print("   presBefore is None. Assigning res.initPressure")
 #            print("res.initPressure = %s" %(res.initPressure))
             presBefore = res.initPressure
 #            print("t=%i" %(i), end='', file=resultsFile)
             printArrayToFile(resultsFile, presBefore.reshape(res.grid.numOfNodes))
         
-        print(TABchar*1 + 'presBefore = %s' %(presBefore))
-        
         sle, known = oneStepDifferentiator(res, presBefore, dt)
-        
-        
-        
+#        print('sle equals ')
+#        print(sle)
+#        print('\n\nknown equals ')
+#        print(known)
         presBefore = linalg.solve(sle, known).reshape(res.grid.dims)
 #        print("t=%i" %(i+1), file=resultsFile)
         printArrayToFile(resultsFile, presBefore.reshape(res.grid.numOfNodes))
@@ -62,9 +68,6 @@ def oneStepDifferentiator(res, presBefore, dt):
     # sle stands for system of linear equations :P
     sle = np.zeros([res.grid.numOfNodes, res.grid.numOfNodes], dtype='float64')
     known = np.zeros(res.grid.numOfNodes, dtype='float64')
-    sleFile = open("sle.txt", "a")
-    
-    
     for indx in range(res.grid.numOfNodes):
 #        print('      Evaluating nodes[%i]' %(indx))
         known[indx] += knownRHS(indx, res, presBefore, dt)
@@ -74,27 +77,13 @@ def oneStepDifferentiator(res, presBefore, dt):
         linEqWRTy, knownWRTy = differentialInY(indx, res, presBefore)
         linEqWRTz, knownWRTz = differentialInZ(indx, res, presBefore)
         
-        
-        print(TABchar*2 + 'linEqWRTt %s' %(linEqWRTt))
-        print(TABchar*2 + 'linEqWRTx %s' %(linEqWRTx))
-        print(TABchar*2 + 'linEqWRTy %s' %(linEqWRTy))
-        print(TABchar*2 + 'linEqWRTz %s' %(linEqWRTz))
+#        print('linEqWRTx\n%s' %(linEqWRTx))
+#        print('linEqWRTy\n%s' %(linEqWRTy))
+#        print('linEqWRTz\n%s' %(linEqWRTz))
         
         known[indx] += knownWRTx + knownWRTy + knownWRTz
-#        sle[indx] += linEqWRTt - linEqWRTx - linEqWRTy - linEqWRTz
-        sle[indx] += linEqWRTt
-        sle[indx] -= linEqWRTx
-        sle[indx] -= linEqWRTy
-        sle[indx] -= linEqWRTz
+        sle[indx] += linEqWRTt - linEqWRTx - linEqWRTy - linEqWRTz
         
-        
-        sleString = ["%.4e"%(elm) for elm in sle[indx]]
-        print("%s\t%s" %(sleString, known[indx]), file=sleFile)
-        
-#        print(TABchar*3 + "%s %s" %(sle[indx], known[indx]))
-        
-    print("", file=sleFile)
-    sleFile.close()
     
     return sle, known
 
@@ -107,8 +96,6 @@ def oneStepDifferentiator(res, presBefore, dt):
 #this constant is used to modify units of res.fluid.getRho() * 32.17 * res.grid.deltaZ
 #so it's in psi
 rhoGDeltaZDimMultiplier = 0.3048/(144*9.80665)
-phiRhoCompDeltaTMultiplier = 0.3048/(144*9.80665*86400)
-srcTermMultiplier = 0.3048/(144*9.80665)
 
 def knownRHS(nodeIndx, res, presBefore, dt):
     coordIndx = res.grid.nodes[nodeIndx].coordIndx
@@ -117,9 +104,9 @@ def knownRHS(nodeIndx, res, presBefore, dt):
     
     
     #do not forget to normalize the dimension!!!
-    knownTerm = srcTermMultiplier*res.fluid.getRho(presBefore[coordIndx])*res.grid.nodes[nodeIndx].qsrc/res.grid.Vb \
-                + phiRhoCompDeltaTMultiplier*res.fluid.getRho(presBefore[coordIndx])*res.rock.getPoro(presBefore[coordIndx])*totalCompressibility(res, presBefore[coordIndx])/dt * presBefore[coordIndx] \
-                + (transmissibility(coordIndx, coordIndxAfter, res, presBefore)-transmissibility(coordIndx, coordIndxBefore, res, presBefore))*rhoGDeltaZDimMultiplier*res.fluid.getRho(presBefore[coordIndx])*32.1740485*res.grid.deltaZ
+    knownTerm = res.fluid.getRho(presBefore[coordIndx])*res.grid.nodes[nodeIndx].qsrc\
+                + res.grid.Vb*res.fluid.getRho(presBefore[coordIndx])*res.rock.getPoro(presBefore[coordIndx])*totalCompressibility(res, presBefore[coordIndx])/dt * presBefore[coordIndx] \
+                + (transmissibility(coordIndx, coordIndxAfter, res, presBefore)-transmissibility(coordIndx, coordIndxBefore, res, presBefore))*rhoGDeltaZDimMultiplier*res.fluid.getRho(presBefore[coordIndx])*32.1740485*res.grid.deltaZ*res.grid.Vb
     
     return knownTerm
     
@@ -143,7 +130,7 @@ def differentialInTime(nodeIndx, res, presBefore, dt):
     coordIndx = res.grid.nodes[nodeIndx].coordIndx
     linEq = np.zeros(res.grid.numOfNodes, dtype='float64')
     
-    linEq[nodeIndx] += phiRhoCompDeltaTMultiplier*res.fluid.getRho(presBefore[coordIndx])*res.rock.getPoro(presBefore[coordIndx])*totalCompressibility(res, presBefore[coordIndx])/dt
+    linEq[nodeIndx] += res.grid.Vb * res.fluid.getRho(presBefore[coordIndx])*res.rock.getPoro(presBefore[coordIndx])*totalCompressibility(res, presBefore[coordIndx])/dt
     
     return linEq
 
@@ -166,9 +153,7 @@ def differentialInTime(nodeIndx, res, presBefore, dt):
 
 
 def differentialInX(nodeIndx, res, presBefore):
-    observing = open("Observing differentialInX().txt", "a")
-    print("Looking at nodeIndx=%s" %(nodeIndx), file=observing)
-    # determine the coordIndx that interacts with nodeIndx
+    # determine the coordIndx that corresponds to nodeIndx
     coordIndx = res.grid.nodes[nodeIndx].coordIndx
     
     # coordIndxAfter and coordIndxBefore correspond to the coordinate that interact
@@ -178,7 +163,7 @@ def differentialInX(nodeIndx, res, presBefore):
     
     linEq = np.zeros(res.grid.numOfNodes, dtype='float64')
     known = 0.0
-    print(TABchar*1 + "linEq is %s" %(linEq), file=observing)
+    
     deltaLen = res.grid.deltaX
     
     boundaryPresCri = res.grid.nodes[nodeIndx].boundaryWRTx[1]
@@ -195,8 +180,6 @@ def differentialInX(nodeIndx, res, presBefore):
         nodeIndxBefore = np.ravel_multi_index(coordIndxBefore, res.grid.dims)
         linEq[nodeIndxBefore] += transmissibility(coordIndx, coordIndxBefore, res, presBefore)
     
-    print(TABchar*1 + "linEq is %s" %(linEq), file=observing)
-    
     # check if there's an 'after' boundary condition w.r.t. coordIndx
     bc = boundaryPresCri['after']
     if(bc != None):
@@ -209,7 +192,6 @@ def differentialInX(nodeIndx, res, presBefore):
         nodeIndxAfter = np.ravel_multi_index(coordIndxAfter, res.grid.dims)
         linEq[nodeIndxAfter] += transmissibility(coordIndx, coordIndxAfter, res, presBefore)
     
-    print(TABchar*1 + "linEq is %s" %(linEq), file=observing)
     
     # finally, with confidence, we perform calculation for nodeIndx (aka coordIndx)
     linEq[nodeIndx] += -1*(transmissibility(coordIndx, coordIndxBefore, res, presBefore) + transmissibility(coordIndx, coordIndxAfter, res, presBefore))
@@ -217,10 +199,6 @@ def differentialInX(nodeIndx, res, presBefore):
 #    print('Returning linEq=%s' %(linEq))
 #    print('and known=%s' %(known))
     
-    
-    print(TABchar*1 + "linEq is %s" %(linEq), file=observing)
-    
-    observing.close()
     return linEq, known
 
 
@@ -243,7 +221,7 @@ def differentialInX(nodeIndx, res, presBefore):
 
 
 def differentialInY(nodeIndx, res, presBefore):
-    # determine the coordIndx that interacts with nodeIndx
+    # determine the coordIndx that corresponds to nodeIndx
     coordIndx = res.grid.nodes[nodeIndx].coordIndx
     
     # coordIndxAfter and coordIndxBefore correspond to the coordinate that interact
@@ -312,7 +290,7 @@ def differentialInY(nodeIndx, res, presBefore):
 
 
 def differentialInZ(nodeIndx, res, presBefore):
-    # determine the coordIndx that interacts with nodeIndx
+    # determine the coordIndx that corresponds to nodeIndx
     coordIndx = res.grid.nodes[nodeIndx].coordIndx
     
     # coordIndxAfter and coordIndxBefore correspond to the coordinate that interact
@@ -400,8 +378,7 @@ def totalCompressibility(res, pres):
 
 
 #this constant is used to modify units of transmissibility so it's in s/ft^2
-transmissibilityDimMultiplier = 0.3048**-3 * 0.453592 * 1e-4 / 101325
-#transmissibilityDimMultiplier = 1
+transmissibilityDimMultiplier = 0.3048**-3*1e-7*0.453592/101325
 
 def transmissibility(coordIndx, wrtCoord, res, presBefore):
     # this function getBoundaryPres() is only used inside transmissibility() function
@@ -445,17 +422,26 @@ def transmissibility(coordIndx, wrtCoord, res, presBefore):
     if(wr == 0):
         deltaLen = res.grid.deltaZ
         area = res.grid.deltaX * res.grid.deltaY
+#        hasBC = res.grid.nodes[np.ravel_multi_index(coordIndx, res.grid.dims)].boundaryWRTz[0]
         boundaryPresCri = res.grid.nodes[np.ravel_multi_index(coordIndx, res.grid.dims)].boundaryWRTz[1]
+#        if(hasBC):
+#            boundaryPresCri = res.grid.nodes[np.ravel_multi_index(coordIndx, res.grid.dims)].boundaryWRTz[1]
     elif(wr == 1):
         deltaLen = res.grid.deltaY
         area = res.grid.deltaX * res.grid.deltaZ
+#        hasBC = res.grid.nodes[np.ravel_multi_index(coordIndx, res.grid.dims)].boundaryWRTy[0]
         boundaryPresCri = res.grid.nodes[np.ravel_multi_index(coordIndx, res.grid.dims)].boundaryWRTy[1]
+#        if(hasBC):
+#            boundaryPresCri = res.grid.nodes[np.ravel_multi_index(coordIndx, res.grid.dims)].boundaryWRTy[1]
     elif(wr == 2):
         deltaLen = res.grid.deltaX
         area = res.grid.deltaY * res.grid.deltaZ
+#        hasBC = res.grid.nodes[np.ravel_multi_index(coordIndx, res.grid.dims)].boundaryWRTx[0]
         boundaryPresCri = res.grid.nodes[np.ravel_multi_index(coordIndx, res.grid.dims)].boundaryWRTx[1]
+#        if(hasBC):
+#            boundaryPresCri = res.grid.nodes[np.ravel_multi_index(coordIndx, res.grid.dims)].boundaryWRTx[1]
     
-    Vb = res.grid.Vb
+#    Vb = res.grid.Vb
     perm = res.rock.perm
     
     wrtPres = None
@@ -481,7 +467,7 @@ def transmissibility(coordIndx, wrtCoord, res, presBefore):
 #    print(rho, perm, area, mu, Vb, deltaLen)
     
     #dimensionNormalizer = 0.3048**-3*1e-7*0.453592/101325
-    transmiss = transmissibilityDimMultiplier*rho*perm*area/(mu*Vb*deltaLen)
+    transmiss = transmissibilityDimMultiplier*rho*perm*area/(mu*deltaLen)
     return transmiss
 
 

@@ -79,7 +79,6 @@ class Rock(object):
         
         
         '''
-        #self.name = name
         self.refPoro = refPoro
         self.refPres = refPres
         self.compress = compress
@@ -100,7 +99,6 @@ class Fluid(object):
         compressibility (compressibility() function, in psi^-1)
         
         '''
-        #self.name = name
         self.refRho = refRho
         self.refPres = refPres
         self.compress = compress
@@ -170,13 +168,6 @@ class BoundaryCondition(object):
         self.bcType = bcType
         self.value = value
         pass
-
-
-
-
-def runOneStepSimulation():
-    # This is a function to run a one time-step simulation
-    pass
 
 
 
