@@ -1,6 +1,6 @@
 
 import numpy as np
-import differentiator
+from differentiator import runSimulation
 
 class Node(object):
     def __init__(self, nodeIndx, dims):
@@ -88,6 +88,8 @@ class Rock(object):
     def getPoro(self, pres):
         return self.refPoro*np.exp(self.compress*(pres - self.refPres))
 
+#rhoGDeltaZDimMultiplier = 0.3048/(144*9.80665)
+rhoGDeltaZDimMultiplier = 1
 class Fluid(object):
     def __init__(self, refRho, refPres, compress, mu):
         '''
@@ -106,6 +108,9 @@ class Fluid(object):
     
     def getRho(self, pres):
         return self.refRho*np.exp(self.compress*(pres - self.refPres))
+    
+    
+    
 
 class Reservoir(object):
     def __init__(self, grid, fluid, rock, resDim):
@@ -120,6 +125,8 @@ class Reservoir(object):
     
     def setInitPressure(self, initPressure):
         self.initPressure = np.full(self.grid.dims, initPressure, dtype='float64')
+            
+            
     
     def addBoundaryCondition(self, bc, **kwargs):
         if not all([key in ["x", "y", "z"] and kwargs[key] in ['after', 'before'] for key in kwargs]):
@@ -157,6 +164,8 @@ class Reservoir(object):
                             node.boundaryWRTz[1]['after'] = bc
         
         
+        
+        
 
 
 class BoundaryCondition(object):
@@ -172,9 +181,29 @@ class BoundaryCondition(object):
 
 
 
+class Well(object):
+    def __init__(self):
+        '''
+        '''
+        pass
 
 
 
+
+
+
+
+
+
+
+
+
+
+#import sys
+#print(sys.argv[0])
+#
+#import os
+#print(os.path.basename(sys.argv[0]))
 
 
 

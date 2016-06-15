@@ -1,21 +1,31 @@
 import numpy as np
 from scipy import linalg
-#import example
+
+
+import sys, os
+resultsFilename = os.path.basename(sys.argv[0])[:-3] + "-results.txt"
+
+
 
 TABchar = "   "
+
+def printFileName():
+    resultsFile = open(resultsFilename, 'w')
+    print("Hello world!!", file=resultsFile)
+    resultsFile.close()
 
 def runSimulation(res, dt, nTime):
     '''
     '''
     
-    resultsFile = open('results3.txt', 'w')
+    resultsFile = open(resultsFilename, 'w')
     
     presBefore = None
     
     for i in range(nTime):
         print(TABchar*0 + "Evaluating t=%i" %(i))
         if(i == 0):
-            print(TABchar*1 + "presBefore is None. Assigning res.initPressure")
+#            print(TABchar*1 + "presBefore is None. Assigning res.initPressure")
 #            print("res.initPressure = %s" %(res.initPressure))
             presBefore = res.initPressure
 #            print("t=%i" %(i), end='', file=resultsFile)
@@ -62,7 +72,6 @@ def oneStepDifferentiator(res, presBefore, dt):
     # sle stands for system of linear equations :P
     sle = np.zeros([res.grid.numOfNodes, res.grid.numOfNodes], dtype='float64')
     known = np.zeros(res.grid.numOfNodes, dtype='float64')
-    sleFile = open("sle.txt", "a")
     
     
     for indx in range(res.grid.numOfNodes):
@@ -75,10 +84,10 @@ def oneStepDifferentiator(res, presBefore, dt):
         linEqWRTz, knownWRTz = differentialInZ(indx, res, presBefore)
         
         
-        print(TABchar*2 + 'linEqWRTt %s' %(linEqWRTt))
-        print(TABchar*2 + 'linEqWRTx %s' %(linEqWRTx))
-        print(TABchar*2 + 'linEqWRTy %s' %(linEqWRTy))
-        print(TABchar*2 + 'linEqWRTz %s' %(linEqWRTz))
+#        print(TABchar*2 + 'linEqWRTt %s' %(linEqWRTt))
+#        print(TABchar*2 + 'linEqWRTx %s' %(linEqWRTx))
+#        print(TABchar*2 + 'linEqWRTy %s' %(linEqWRTy))
+#        print(TABchar*2 + 'linEqWRTz %s' %(linEqWRTz))
         
         known[indx] += knownWRTx + knownWRTy + knownWRTz
 #        sle[indx] += linEqWRTt - linEqWRTx - linEqWRTy - linEqWRTz
@@ -87,15 +96,6 @@ def oneStepDifferentiator(res, presBefore, dt):
         sle[indx] -= linEqWRTy
         sle[indx] -= linEqWRTz
         
-        
-        sleString = ["%.4e"%(elm) for elm in sle[indx]]
-        print("%s\t%s" %(sleString, known[indx]), file=sleFile)
-        
-#        print(TABchar*3 + "%s %s" %(sle[indx], known[indx]))
-        
-    print("", file=sleFile)
-    sleFile.close()
-    
     return sle, known
 
 
@@ -166,8 +166,6 @@ def differentialInTime(nodeIndx, res, presBefore, dt):
 
 
 def differentialInX(nodeIndx, res, presBefore):
-    observing = open("Observing differentialInX().txt", "a")
-    print("Looking at nodeIndx=%s" %(nodeIndx), file=observing)
     # determine the coordIndx that interacts with nodeIndx
     coordIndx = res.grid.nodes[nodeIndx].coordIndx
     
@@ -178,7 +176,6 @@ def differentialInX(nodeIndx, res, presBefore):
     
     linEq = np.zeros(res.grid.numOfNodes, dtype='float64')
     known = 0.0
-    print(TABchar*1 + "linEq is %s" %(linEq), file=observing)
     deltaLen = res.grid.deltaX
     
     boundaryPresCri = res.grid.nodes[nodeIndx].boundaryWRTx[1]
@@ -195,7 +192,6 @@ def differentialInX(nodeIndx, res, presBefore):
         nodeIndxBefore = np.ravel_multi_index(coordIndxBefore, res.grid.dims)
         linEq[nodeIndxBefore] += transmissibility(coordIndx, coordIndxBefore, res, presBefore)
     
-    print(TABchar*1 + "linEq is %s" %(linEq), file=observing)
     
     # check if there's an 'after' boundary condition w.r.t. coordIndx
     bc = boundaryPresCri['after']
@@ -209,7 +205,6 @@ def differentialInX(nodeIndx, res, presBefore):
         nodeIndxAfter = np.ravel_multi_index(coordIndxAfter, res.grid.dims)
         linEq[nodeIndxAfter] += transmissibility(coordIndx, coordIndxAfter, res, presBefore)
     
-    print(TABchar*1 + "linEq is %s" %(linEq), file=observing)
     
     # finally, with confidence, we perform calculation for nodeIndx (aka coordIndx)
     linEq[nodeIndx] += -1*(transmissibility(coordIndx, coordIndxBefore, res, presBefore) + transmissibility(coordIndx, coordIndxAfter, res, presBefore))
@@ -218,9 +213,6 @@ def differentialInX(nodeIndx, res, presBefore):
 #    print('and known=%s' %(known))
     
     
-    print(TABchar*1 + "linEq is %s" %(linEq), file=observing)
-    
-    observing.close()
     return linEq, known
 
 
