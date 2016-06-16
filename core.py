@@ -1,6 +1,6 @@
 
 import numpy as np
-from differentiator import runSimulation
+
 
 class Node(object):
     def __init__(self, nodeIndx, dims):
@@ -88,8 +88,7 @@ class Rock(object):
     def getPoro(self, pres):
         return self.refPoro*np.exp(self.compress*(pres - self.refPres))
 
-#rhoGDeltaZDimMultiplier = 0.3048/(144*9.80665)
-rhoGDeltaZDimMultiplier = 1
+
 class Fluid(object):
     def __init__(self, refRho, refPres, compress, mu):
         '''
@@ -177,33 +176,6 @@ class BoundaryCondition(object):
         self.bcType = bcType
         self.value = value
         pass
-
-
-
-
-class Well(object):
-    def __init__(self):
-        '''
-        '''
-        pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-#import sys
-#print(sys.argv[0])
-#
-#import os
-#print(os.path.basename(sys.argv[0]))
 
 
 

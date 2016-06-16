@@ -6,13 +6,7 @@ import sys, os
 resultsFilename = os.path.basename(sys.argv[0])[:-3] + "-results.txt"
 
 
-
-TABchar = "   "
-
-def printFileName():
-    resultsFile = open(resultsFilename, 'w')
-    print("Hello world!!", file=resultsFile)
-    resultsFile.close()
+TABchar = "  "
 
 def runSimulation(res, dt, nTime):
     '''
@@ -25,10 +19,7 @@ def runSimulation(res, dt, nTime):
     for i in range(nTime):
         print(TABchar*0 + "Evaluating t=%i" %(i))
         if(i == 0):
-#            print(TABchar*1 + "presBefore is None. Assigning res.initPressure")
-#            print("res.initPressure = %s" %(res.initPressure))
             presBefore = res.initPressure
-#            print("t=%i" %(i), end='', file=resultsFile)
             printArrayToFile(resultsFile, presBefore.reshape(res.grid.numOfNodes))
         
         print(TABchar*1 + 'presBefore = %s' %(presBefore))
@@ -38,7 +29,6 @@ def runSimulation(res, dt, nTime):
         
         
         presBefore = linalg.solve(sle, known).reshape(res.grid.dims)
-#        print("t=%i" %(i+1), file=resultsFile)
         printArrayToFile(resultsFile, presBefore.reshape(res.grid.numOfNodes))
         
     
@@ -50,10 +40,6 @@ def printArrayToFile(f, nparray):
     for elm in nparray:
         print("%.4f" %(elm), end=' ', file=f)
     print("\n", end='', file=f)
-
-
-
-
 
 
 
@@ -75,7 +61,6 @@ def oneStepDifferentiator(res, presBefore, dt):
     
     
     for indx in range(res.grid.numOfNodes):
-#        print('      Evaluating nodes[%i]' %(indx))
         known[indx] += knownRHS(indx, res, presBefore, dt)
         
         linEqWRTt = differentialInTime(indx, res, presBefore, dt)
@@ -84,23 +69,13 @@ def oneStepDifferentiator(res, presBefore, dt):
         linEqWRTz, knownWRTz = differentialInZ(indx, res, presBefore)
         
         
-#        print(TABchar*2 + 'linEqWRTt %s' %(linEqWRTt))
-#        print(TABchar*2 + 'linEqWRTx %s' %(linEqWRTx))
-#        print(TABchar*2 + 'linEqWRTy %s' %(linEqWRTy))
-#        print(TABchar*2 + 'linEqWRTz %s' %(linEqWRTz))
-        
         known[indx] += knownWRTx + knownWRTy + knownWRTz
-#        sle[indx] += linEqWRTt - linEqWRTx - linEqWRTy - linEqWRTz
         sle[indx] += linEqWRTt
         sle[indx] -= linEqWRTx
         sle[indx] -= linEqWRTy
         sle[indx] -= linEqWRTz
         
     return sle, known
-
-
-
-
 
 
 
@@ -116,24 +91,13 @@ def knownRHS(nodeIndx, res, presBefore, dt):
     coordIndxAfter = coordIndx[0]+1, coordIndx[1], coordIndx[2]
     
     
-    #do not forget to normalize the dimension!!!
+    #do not forget to modify the dimension!!!
     knownTerm = srcTermMultiplier*res.fluid.getRho(presBefore[coordIndx])*res.grid.nodes[nodeIndx].qsrc/res.grid.Vb \
                 + phiRhoCompDeltaTMultiplier*res.fluid.getRho(presBefore[coordIndx])*res.rock.getPoro(presBefore[coordIndx])*totalCompressibility(res, presBefore[coordIndx])/dt * presBefore[coordIndx] \
                 + (transmissibility(coordIndx, coordIndxAfter, res, presBefore)-transmissibility(coordIndx, coordIndxBefore, res, presBefore))*rhoGDeltaZDimMultiplier*res.fluid.getRho(presBefore[coordIndx])*32.1740485*res.grid.deltaZ
     
     return knownTerm
     
-
-
-
-
-
-
-
-
-
-
-
 
 def differentialInTime(nodeIndx, res, presBefore, dt):
     # In a linear equation with some unknowns variables,
@@ -146,23 +110,6 @@ def differentialInTime(nodeIndx, res, presBefore, dt):
     linEq[nodeIndx] += phiRhoCompDeltaTMultiplier*res.fluid.getRho(presBefore[coordIndx])*res.rock.getPoro(presBefore[coordIndx])*totalCompressibility(res, presBefore[coordIndx])/dt
     
     return linEq
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 def differentialInX(nodeIndx, res, presBefore):
@@ -209,28 +156,8 @@ def differentialInX(nodeIndx, res, presBefore):
     # finally, with confidence, we perform calculation for nodeIndx (aka coordIndx)
     linEq[nodeIndx] += -1*(transmissibility(coordIndx, coordIndxBefore, res, presBefore) + transmissibility(coordIndx, coordIndxAfter, res, presBefore))
     
-#    print('Returning linEq=%s' %(linEq))
-#    print('and known=%s' %(known))
-    
     
     return linEq, known
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -281,28 +208,6 @@ def differentialInY(nodeIndx, res, presBefore):
     return linEq, known
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def differentialInZ(nodeIndx, res, presBefore):
     # determine the coordIndx that interacts with nodeIndx
     coordIndx = res.grid.nodes[nodeIndx].coordIndx
@@ -311,8 +216,6 @@ def differentialInZ(nodeIndx, res, presBefore):
     # with coordIndx
     coordIndxAfter = coordIndx[0]+1, coordIndx[1], coordIndx[2]
     coordIndxBefore = coordIndx[0]-1, coordIndx[1], coordIndx[2]
-    
-#    print('coordIndx=', coordIndx, ' coordIndxBefore=', coordIndxBefore, 'coordIndxAfter=', coordIndxAfter)
     
     linEq = np.zeros(res.grid.numOfNodes, dtype='float64')
     known = 0.0
@@ -352,43 +255,8 @@ def differentialInZ(nodeIndx, res, presBefore):
     return linEq, known
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def totalCompressibility(res, pres):
     return (res.fluid.compress + res.rock.compress)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #this constant is used to modify units of transmissibility so it's in s/ft^2
@@ -406,7 +274,6 @@ def transmissibility(coordIndx, wrtCoord, res, presBefore):
         elif(bc.bcType == 'd'):
             return bc.value
     
-#    print("coordIndx and wrtCoord are", coordIndx, wrtCoord)
     
     # wr is used to determine w.r.t. which 3D direction this transmissibility term is calculated
     # forward is used to determine if it's the forward transmissibility (x+) or not (x-)
@@ -420,7 +287,6 @@ def transmissibility(coordIndx, wrtCoord, res, presBefore):
                 forward = False
             break
     
-#    print("wr equals ", wr)
     
     # if wr = 0, we're looking at the transmissibility with respect to z
     # if wr = 1, it is with respect to y
@@ -431,7 +297,6 @@ def transmissibility(coordIndx, wrtCoord, res, presBefore):
     
     deltaLen = None
     area = None
-    hasBC = None
     boundaryPresCri = None
     
     if(wr == 0):
@@ -452,11 +317,6 @@ def transmissibility(coordIndx, wrtCoord, res, presBefore):
     
     wrtPres = None
     
-#    if(hasBC):
-#        if(forward):
-#            wrtPres = getBoundaryPres(presBefore[coordIndx], boundaryPresCri['after'], 'after', deltaLen)
-#        else:
-#            wrtPres = getBoundaryPres(presBefore[coordIndx], boundaryPresCri['before'], 'before', deltaLen)
     if(forward) and (boundaryPresCri['after'] != None):
         wrtPres = getBoundaryPres(presBefore[coordIndx], boundaryPresCri['after'], 'after', deltaLen)
     elif(not forward) and (boundaryPresCri['before'] != None):
@@ -470,9 +330,6 @@ def transmissibility(coordIndx, wrtCoord, res, presBefore):
     rho = res.fluid.getRho(presAvg)
     mu = res.fluid.mu
     
-#    print(rho, perm, area, mu, Vb, deltaLen)
-    
-    #dimensionNormalizer = 0.3048**-3*1e-7*0.453592/101325
     transmiss = transmissibilityDimMultiplier*rho*perm*area/(mu*Vb*deltaLen)
     return transmiss
 
