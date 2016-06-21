@@ -5,14 +5,16 @@
 from core import *
 from differentiator import runSimulation
 
+# 1*101*101 gridblocks
+# radius 2,500 ft
 
 # Firstly, we can specify the dimension of the cartesian grid
-nz, ny, nx = 5, 51, 51
+nz, ny, nx = 1, 151, 151
 dims = (nz, ny, nx)
 g = Grid(dims)
 
 # Then, we can specify the whole reservoir dimension
-Lz, Ly, Lx = 75, 5000, 5000
+Lz, Ly, Lx = 75, 2500, 2500
 resDimension = (Lz, Ly, Lx)
 
 # Build the fluid and rock model
@@ -42,11 +44,11 @@ res.setInitPressure(6000)
 
 
 # Set a source/sink in coordinate (0, 0, 3)
-res.grid.nodes[np.ravel_multi_index((0, 24, 24), res.grid.dims)].setSrc(-150)
+res.grid.nodes[np.ravel_multi_index((0, 75, 75), res.grid.dims)].setSrc(-150)
 
 
 # Finally, run the simulation!
-runSimulation(res, dt=15, nTime=24)
+runSimulation(res, dt=0.1, nTime=10*3+2)
 
 #runSimulation2(res, dt=15, nTime=30)
 

@@ -50,12 +50,12 @@ res.grid.nodes[np.ravel_multi_index((0, 25, 25), res.grid.dims)].setSrc(-150)
 
 
 # Finally, run the simulation!
-runSimulation(res, dt=0.25, nTime=14)
+runSimulation(res, dt=0.25, nTime=4*3+2)
 
 
 
 # Temporarily use MRST's plotCellData
-#generateMFile('example-4', res.grid.dims, res.resDim, 23)
+#generateMFile('example-4', res.grid.dims, res.resDim, 13)
 
 
 

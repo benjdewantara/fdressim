@@ -33,6 +33,6 @@ def generatePresDist(resultFilename, gridDim, timeLevel, yIndx=None, xIndx=None)
 if(__name__ == '__main__'):
     nTime = 14
     for tIndx in range(nTime):
-        generatePresDist('example-4', (1, 51, 51), tIndx, yIndx=25)
+        generatePresDist('example-5', (1, 101, 101), tIndx, yIndx=50)
     
     print("1D pressure distribution has been generated")

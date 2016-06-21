@@ -58,6 +58,6 @@ def generatePresArr(pressureDist):
     return pressureArrStr
 
 if(__name__ == '__main__'):
-    generateMFile('example-4', (1, 51, 51), (75, 5000, 5000), 13)
+    generateMFile('example-5', (1, 101, 101), (75, 2500, 2500), 24)
 
 

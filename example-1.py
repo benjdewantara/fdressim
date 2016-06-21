@@ -28,7 +28,7 @@ r = Rock(refPoro=0.18, refPres=14.7, compress=0, perm=0.015)
 
 
 
-# We contain all these informations in a Reservoir object
+# We contain all information in a Reservoir object
 res = Reservoir(grid=g, fluid=f, rock=r, resDim=resDimension)
 
 # By default, the moment we declare a Node object, a no-flow Neumann

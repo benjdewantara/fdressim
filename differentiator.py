@@ -47,7 +47,7 @@ def printArrayToFile(f, nparray):
 def oneStepDifferentiator(res, presBefore, dt):
     '''
     res: Reservoir object
-    presBefore: array of values of pressure (in psi)
+    presBefore: array of values of pressure (in psi) that will be differentiated
     dt: the value of time interval (whatever unit variable dt is in, it must be
     converted to second)
     '''
