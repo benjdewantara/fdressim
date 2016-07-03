@@ -4,9 +4,10 @@
 
 - [About](#about)
 - [Using the simulator](#how-to-use-the-simulator)
-    - [Install Python and other dependencies](#install-python-and-other-dependencies)
+    - [Installing Python and other dependencies](#install-python-and-other-dependencies)
     - [Other specification](#other-specification)
     - [Downloading **fdressim**](#downloading-fdressim)
+    - [Brief explanation](#brief-explanation)
     - [Example script](#example-script)
 
 # About
@@ -39,6 +40,9 @@ Normally, one may install Python directly using an available version of installe
 ## Downloading fdressim
 
 There is a *Clone or download* button in fdressim Github's page. You can download the [zip file][fdressim-master-zip] and extract it.
+
+
+## Brief explanation
 
 
 
