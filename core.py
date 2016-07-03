@@ -1,6 +1,7 @@
 
-import numpy as np
 
+
+import numpy as np
 
 class Node(object):
     def __init__(self, nodeIndx, dims):
@@ -107,7 +108,6 @@ class Fluid(object):
     
     def getRho(self, pres):
         return self.refRho*np.exp(self.compress*(pres - self.refPres))
-    
     
     
 

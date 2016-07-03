@@ -33,9 +33,6 @@ res = Reservoir(grid=g, fluid=f, rock=r, resDim=resDimension)
 
 # By default, the moment we declare a Node object, a no-flow Neumann
 # condition has already been imposed if the Node is a boundary Node.
-# But we can specify another condition with another value as follows
-bc = BoundaryCondition()
-#res.addBoundaryCondition(bc, x='before')
 
 # Set the initial pressure array
 res.setInitPressure(6000)
