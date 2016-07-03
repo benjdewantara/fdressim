@@ -4,5 +4,9 @@
 
 # Contents
 
-[About](#about)
-[How to use the simulator](#how-to)
+- [About](#about)
+- [How to use the simulator](#how-to)
+
+# About
+
+# How to use the simulator
