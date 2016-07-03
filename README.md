@@ -1,6 +1,6 @@
 <h1 align='center'>Single-phase Fluid Finite-difference Simulator using Python </h1>
 
-# Contents
+### Contents
 
 - [About](#about)
 - [Using the simulator](#how-to-use-the-simulator)
